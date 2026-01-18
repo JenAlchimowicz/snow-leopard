@@ -1,0 +1,20 @@
+[project]
+name = "trading-notifications"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "boto3>=1.42.30",
+    "mplfinance>=0.12.10b0",
+    "polars>=1.35.2",
+    "pyarrow>=22.0.0",
+    "requests>=2.32.5",
+    "s3fs>=0.4.2",
+]
+
+[dependency-groups]
+dev = [
+    "ipykernel>=7.1.0",
+    "jupyterlab>=4.5.0",
+]
