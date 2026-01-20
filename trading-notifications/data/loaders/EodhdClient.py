@@ -47,6 +47,7 @@ class EodhdClient:
         for exchange in [Config.EXCHANGE_CODE_US, Config.EXCHANGE_CODE_INDIA]:
             url = self.get_bulk_eod_data_url(exchange, date)
             df: pl.DataFrame = self._fetch_eodhd_data(url)
+            print(f"Loaded {df.height} rows for exchange {exchange} on date {date}")
             if df.height > 5:
                 frames.append(df)
         return pl.concat(frames, how="vertical") if frames else pl.DataFrame()
