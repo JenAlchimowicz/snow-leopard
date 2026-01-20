@@ -7,12 +7,13 @@ from data.processing.notificationFlag import add_notification_flag, final_filter
 from smsecrets.secrets import get_secrets
 from notifications.email import send_update_email
 from notifications.graphs import create_charts
+from utils.tradingDay import get_trading_day
 from config import Config, ColumnConfig
 from datetime import date
 import polars as pl
 
 def main():
-    print("Hello from trading-notifications!")
+    print(f"Hello from trading-notifications, system date is {date.today().isoformat()}, trading day is {get_trading_day().isoformat()}")
 
     # Load configuration
     secrets = get_secrets()
@@ -21,6 +22,7 @@ def main():
     lookback = int(secrets["lookback"])
     volume_threshold = int(secrets["volume_threshold"])
     recipients = [e.strip() for e in secrets["email_recipients"].split(",")]
+    print(f"Configured to notify for exchanges: {exchanges}, lookback: {lookback}, volume threshold: {volume_threshold}, email recipients: {recipients}")
 
     # Prep data
     eodhdClient = EodhdClient(eodhdApiKey)
@@ -31,7 +33,7 @@ def main():
 
     data = dataLoader.load_data(date_from=date(2024,1,1))
     data = data.with_columns((pl.col(ColumnConfig.EXCHANGE_SHORT_NAME) + "_" + pl.col(ColumnConfig.CODE)).alias(ColumnConfig.ID))
-    print(data.shape)
+    print(f"Data loaded with shape: {data.shape}")
 
     # Indicators
     data = add_ema_column(data, span=200)
@@ -39,26 +41,26 @@ def main():
     data = add_ema_column(data, span=5)
     data = add_rsi_column(data)
     data = add_all_time_high(data)
-    print(data.shape)
+    print(f"Indicators added, data shape: {data.shape}")
 
     # Flags
     data = add_ema_200_flag(data, 0.05)
     data = add_ema5_x_ema20_flag(data)
     data = add_rsi_approaching_50_flag(data)
     data = add_notification_flag(data)
-    print(data.shape)
+    print(f"Flags added, data shape: {data.shape}")
 
     # Final filter
     filtered = final_filter(data, exchanges, lookback, volume_threshold)
-    print(data.shape)
+    print(f"After final filter, data shape: {filtered.shape}")
     tickers = filtered.select(pl.col(ColumnConfig.ID)).unique().to_series().to_list()
+    print(f"Notifications for {len(tickers)} tickers: {tickers}")
 
     try:
         create_charts(data, tickers)
     except Exception as e:
         print(f"Error creating charts: {e}")
 
-    print(f"Notifications for {len(tickers)} tickers: {tickers}")
     send_update_email(tickers, recipients)
 
 if __name__ == "__main__":

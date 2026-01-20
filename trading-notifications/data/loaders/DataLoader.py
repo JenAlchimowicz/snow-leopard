@@ -1,6 +1,7 @@
 from datetime import date, timedelta
 from data.loaders.EodhdClient import EodhdClient
 from data.loaders.storage.StorageClient import StorageClient
+from utils.tradingDay import get_trading_day
 from config import Config, ColumnConfig
 from typing import List
 import polars as pl
@@ -13,7 +14,7 @@ class DataLoader:
     def _dates_between(self, date_from: date, date_to: date | None = None) -> list[str]:
         """Return all dates between date_from and date_to (inclusive) as YYYY-MM-DD strings.
         If date_to is None, use today's date."""
-        date_to = date_to or date.today()
+        date_to = date_to or get_trading_day()
         step = timedelta(days=1)
         direction = 1 if date_to >= date_from else -1
         dates = []
@@ -44,6 +45,7 @@ class DataLoader:
         )
         print(f"Days missing: {len(dates_for_which_we_need_to_download_data)}")
         relevant_tickers: pl.DataFrame = self._get_relevant_tickers()
+        print(f"Relevant tickers count: {relevant_tickers.height}")
         for dateString in list(dates_for_which_we_need_to_download_data):
             print(dateString)
             data: pl.DataFrame = self.eodhdClient.bulk_load_us_india_exchanges_eod_data(dateString)
@@ -57,8 +59,9 @@ class DataLoader:
                 print("empty df - weekend or holiday")
             
             # most likely there is no data yet for today
-            if dateString == date.today().isoformat():
+            if dateString == get_trading_day().isoformat():
                 if data.height == 0:
+                    print("No data for today yet, skipping upload")
                     continue
 
             if data.height > 0:

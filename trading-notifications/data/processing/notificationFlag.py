@@ -1,6 +1,7 @@
 import polars as pl
-from datetime import date, timedelta
+from datetime import timedelta
 from typing import List
+from utils.tradingDay import get_trading_day
 
 def add_notification_flag(dd: pl.DataFrame) -> pl.DataFrame:
     window_size = 10
@@ -50,7 +51,7 @@ def final_filter(
             pl.col("date").str.to_date()
         )
         .filter(
-            pl.col("date") >= pl.lit(date.today() - timedelta(days=lookback))
+            pl.col("date") >= pl.lit(get_trading_day() - timedelta(days=lookback))
         )
         .sort("date", descending=True)
     )
