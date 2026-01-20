@@ -211,7 +211,7 @@ resource "aws_scheduler_schedule" "daily_task" {
     mode = "OFF"
   }
 
-  schedule_expression = "cron(0 22 * * ? *)"
+  schedule_expression = "cron(0 2 * * ? *)"
 
   schedule_expression_timezone = "Europe/London"
 
