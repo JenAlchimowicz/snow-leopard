@@ -82,3 +82,4 @@ def create_candlestick_chart(df, ticker_id):
 def create_charts(df: pl.DataFrame, tickers: list[str]):
     for ticker in tickers:
         create_candlestick_chart(df, ticker)
+        print(f"Chart created successfully for {ticker}")
