@@ -61,7 +61,8 @@ def main():
     except Exception as e:
         print(f"Error creating charts: {e}")
 
-    send_update_email(tickers, recipients)
+    if tickers:
+        send_update_email(tickers, recipients)
 
 if __name__ == "__main__":
     main()
