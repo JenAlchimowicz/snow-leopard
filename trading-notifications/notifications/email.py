@@ -4,6 +4,7 @@ from datetime import datetime
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.image import MIMEImage
+from utils.tradingDay import get_trading_day
 
 def send_update_email(tickers: list[str], recipients: list[str]) -> None:
     AWS_REGION = "eu-west-1"
@@ -17,7 +18,7 @@ def send_update_email(tickers: list[str], recipients: list[str]) -> None:
     msg['To'] = ", ".join(recipients)
 
     # 2. Build the HTML and find valid images first
-    today_str = datetime.now().strftime("%Y-%m-%d")
+    today_str = get_trading_day().isoformat()
     html_sections = [f"<h2>Snow Leopard Detection - {today_str}</h2>"]
     valid_images = [] # Store (path, cid) to attach later
 
